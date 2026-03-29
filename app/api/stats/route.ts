@@ -1,3 +1,4 @@
+export const runtime = "nodejs";
 import { NextResponse } from "next/server";
 import prisma from "@/lib/db";
 
@@ -34,6 +35,6 @@ export async function GET() {
 
         return NextResponse.json(stats);
     } catch (e) {
-        return NextResponse.json({ error: "Server Error" }, { status: 500 });
+        return NextResponse.json({ error: "Server Error" }, { status: 400 });
     }
 }
