@@ -1,3 +1,4 @@
+export const runtime = "nodejs";
 import { decrypt } from "@/lib/session";
 import { NextRequest, NextResponse } from "next/server";
 import UserService from "@/services/user";

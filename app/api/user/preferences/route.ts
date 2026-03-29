@@ -1,6 +1,7 @@
+export const runtime = "nodejs";
 import { NextRequest, NextResponse } from "next/server";
 import { decrypt } from "@/lib/session";
-import prisma from "@/lib/db";
+import prisma from "@/lib/db";  
 
 export async function PUT(req: NextRequest) {
     try {

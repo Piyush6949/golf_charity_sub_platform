@@ -1,3 +1,4 @@
+export const runtime = "nodejs";
 import { NextRequest, NextResponse } from "next/server";
 import { decrypt } from "@/lib/session";
 import DrawService from "@/services/draw";
