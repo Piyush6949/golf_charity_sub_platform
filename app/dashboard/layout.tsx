@@ -3,11 +3,12 @@
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useAuth } from "@/app/context/AuthContext";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-    const [userData, setUserData] = useState<UserData | null>(null);
+    const { user, loading, logout } = useAuth();
     const router = useRouter();
     const navLinks = [
         { href: "/dashboard", label: "Overview", icon: "grid" },
@@ -16,36 +17,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         { href: "/dashboard/settings", label: "Settings", icon: "settings" },
     ];
 
-    type UserData = {
-        name: string;
-        email: string;
-        isSubscribed: boolean;
-        subscriptionEnd: Date;
-        charityId: string;
-        charityContribution: number;
-        role: string;
-    }
-
     useEffect(() => {
-        async function getUser() {
-            const res = await fetch("/api/user", {
-                method: "GET",
-                credentials: "include",
-            })
-            if (!res.ok) {
-                router.push("/");
-            }
-            const data = await res.json();
-            setUserData(data);
+        if (!loading && !user) {
+            router.replace("/");
         }
-        getUser();
-    }, []);
+    }, [loading, user, router]);
 
     const handleLogout = async () => {
-        await fetch("/api/logout", {
-            method: "POST",
-            credentials: "include",
-        });
+        await logout();
         router.push("/");
     };
 
@@ -79,6 +58,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 return null;
         }
     };
+
+    if (loading || !user) {
+        return (
+            <div className="min-h-screen bg-background flex items-center justify-center">
+                <div className="w-8 h-8 border-2 border-accent-emerald border-t-transparent rounded-full animate-spin" />
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-background text-foreground flex">
@@ -117,11 +104,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <div className="p-4 border-t border-border">
                     <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-surface">
                         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-accent-emerald to-accent-teal flex items-center justify-center text-sm font-bold shadow-[0_0_10px_rgba(16,185,129,0.2)]">
-                            {userData?.name.charAt(0).toUpperCase()}
+                            {user.name.charAt(0).toUpperCase()}
                         </div>
                         <div className="overflow-hidden">
-                            <div className="text-sm font-semibold truncate">{userData?.name}</div>
-                            <div className="text-xs text-text-muted truncate">{userData?.role}</div>
+                            <div className="text-sm font-semibold truncate">{user.name}</div>
+                            <div className="text-xs text-text-muted truncate">{user.role}</div>
                         </div>
                     </div>
                     <button className="w-full mt-2 text-left px-4 py-2 text-sm text-text-muted hover:text-rose-400 transition-colors" onClick={handleLogout}>
@@ -149,7 +136,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
                     <div className="hidden md:flex flex-1 justify-end items-center gap-4">
                             <div className="text-sm text-text-secondary flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface border border-border">
-                            {userData?.isSubscribed ? (
+                            {user.isSubscribed ? (
                                 <>
                                     <span className="w-2 h-2 rounded-full bg-accent-emerald animate-pulse"></span>
                                     Subscription Active
@@ -193,7 +180,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                                 );
                             })}
                             <div className="h-px bg-border my-2" />
-                            <button className="flex items-center gap-3 px-4 py-3 text-rose-400">
+                            <button
+                                type="button"
+                                className="flex items-center gap-3 px-4 py-3 text-rose-400 w-full text-left"
+                                onClick={() => {
+                                    setMobileMenuOpen(false);
+                                    handleLogout();
+                                }}
+                            >
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                     <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" />
                                 </svg>

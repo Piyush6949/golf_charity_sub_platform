@@ -1,16 +1,27 @@
 "use client";
 
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
+import { useAuth } from "@/app/context/AuthContext";
 
 export default function Navbar() {
     const [scrolled, setScrolled] = useState(false);
     const [mobileOpen, setMobileOpen] = useState(false);
+    const { user, loading, logout } = useAuth();
+    const router = useRouter();
 
     useEffect(() => {
         const handleScroll = () => setScrolled(window.scrollY > 20);
         window.addEventListener("scroll", handleScroll);
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
+
+    const handleLogout = async () => {
+        await logout();
+        setMobileOpen(false);
+        router.push("/");
+    };
 
     const links = [
         { href: "#how-it-works", label: "How It Works" },
@@ -43,8 +54,30 @@ export default function Navbar() {
                 </div>
 
                 <div className="nav-cta">
-                    <a href="/login" className="nav-signin">Login</a>
-                    <a href="#pricing" className="btn-primary btn-sm"><span>Get Started</span></a>
+                    {loading ? (
+                        <span
+                            className="inline-block h-9 w-28 rounded-md bg-surface/80 animate-pulse"
+                            aria-hidden
+                        />
+                    ) : user ? (
+                        <>
+                            <Link href="/dashboard" className="nav-signin">
+                                Dashboard
+                            </Link>
+                            <button
+                                type="button"
+                                onClick={handleLogout}
+                                className="btn-primary btn-sm"
+                            >
+                                <span>Sign out</span>
+                            </button>
+                        </>
+                    ) : (
+                        <>
+                            <a href="/login" className="nav-signin">Login</a>
+                            <a href="#pricing" className="btn-primary btn-sm"><span>Get Started</span></a>
+                        </>
+                    )}
                 </div>
 
                 <button
@@ -63,9 +96,33 @@ export default function Navbar() {
                             {link.label}
                         </a>
                     ))}
-                    <a href="#pricing" className="btn-primary" onClick={() => setMobileOpen(false)}>
-                        <span>Get Started</span>
-                    </a>
+                    {loading ? (
+                        <div className="h-11 rounded-lg bg-surface/80 animate-pulse" aria-hidden />
+                    ) : user ? (
+                        <>
+                            <Link
+                                href="/dashboard"
+                                onClick={() => setMobileOpen(false)}
+                                className="text-center py-3 font-medium"
+                            >
+                                Dashboard
+                            </Link>
+                            <button
+                                type="button"
+                                className="btn-primary w-full"
+                                onClick={handleLogout}
+                            >
+                                <span>Sign out</span>
+                            </button>
+                        </>
+                    ) : (
+                        <>
+                            <a href="/login" onClick={() => setMobileOpen(false)}>Login</a>
+                            <a href="#pricing" className="btn-primary" onClick={() => setMobileOpen(false)}>
+                                <span>Get Started</span>
+                            </a>
+                        </>
+                    )}
                 </div>
             </div>
         </nav>
